@@ -1,3 +1,13 @@
+# MacOS
+.DS_Store
+
+# IDEs
+.vscode
+.idea
+
+# ESP-IDF
+**/cmake-build-debug-esp-idf/
+
 # Prerequisites
 *.d
 
