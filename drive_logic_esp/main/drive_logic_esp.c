@@ -11,11 +11,14 @@
 #include <stdio.h>
 #include "driver/twai.h"
 #include "esp_log.h"
+#include "freertos/FreeRTOS.h"
 
+// Pins
 #define TWAI_TX_PIN 21
 #define TWAI_RX_PIN 22
 
 static const char* TAG = "drive_logic";
+
 
 /**
  * Initialize the CAN bus using TWAI
@@ -44,8 +47,35 @@ esp_err_t init_can() {
     return ESP_OK;
 }
 
+/**
+ * Task to continuously read and process messages from the CAN bus.
+ */
+_Noreturn void read_can_task() {
+
+    twai_message_t msg;
+
+    while (1) {
+        // Receive data from TWAI
+        esp_err_t err = twai_receive(&msg, portMAX_DELAY);
+        if (err != ESP_OK) {
+            if (err == ESP_ERR_TIMEOUT) {
+                ESP_LOGW(TAG, "Timed out waiting to receive data over CAN");
+            } else {
+                ESP_LOGE(TAG, "Unable to receive data from TWAI (CAN): %s", esp_err_to_name(err));
+            }
+            continue;
+        }
+
+        // TODO process CAN messages
+
+    }
+}
 
 void app_main(void)
 {
+    // Initialize everything
     init_can();
+
+    // Create tasks
+    xTaskCreate(read_can_task, "read_can", 4096, NULL, 5, NULL);
 }
